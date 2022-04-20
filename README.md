@@ -52,5 +52,5 @@ Used in conjunction with [`jira-cli`](https://github.com/ankitpokhrel/jira-cli) 
 
 ```bash
 # command
-get checkout -b $(jira issue list --plain --columns key, summary | fzf | branchify)
+git checkout -b $(jira issue list --plain --columns key, summary | fzf | branchify)
 ```
