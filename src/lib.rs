@@ -81,6 +81,39 @@ mod tests {
     }
 
     #[test]
+    fn test_run_without_args() {
+        let args: Vec<String> = vec![];
+        let config = Config::new(&args);
+        let expected = "feature/APM-123-do-something-that-helps-";
+        assert_eq!(
+            run(config, "APM-123\tDo something that helps the product"),
+            expected
+        );
+    }
+
+    #[test]
+    fn test_run_with_type_arg_only() {
+        let args: Vec<String> = vec![String::from("-t"), String::from("hotfix")];
+        let config = Config::new(&args);
+        let expected = "hotfix/APM-123-do-something-that-helps-t";
+        assert_eq!(
+            run(config, "APM-123\tDo something that helps the product"),
+            expected
+        );
+    }
+
+    #[test]
+    fn test_run_with_prepend_arg_only() {
+        let args: Vec<String> = vec![String::from("-p"), String::from("adam")];
+        let config = Config::new(&args);
+        let expected = "adam/feature/APM-123-do-something-that-h";
+        assert_eq!(
+            run(config, "APM-123\tDo something that helps the product"),
+            expected
+        );
+    }
+
+    #[test]
     fn test_get_branch_name() {
         let args: Vec<String> = vec![
             String::from("-p"),
