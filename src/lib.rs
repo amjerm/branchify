@@ -8,14 +8,23 @@ impl Config {
         let mut branch_type = String::from("feature");
         let mut prepended_value = String::from("");
 
+        let arguments = args.clone();
         for (i, argument) in args.iter().enumerate() {
             match argument.as_str() {
-                "-t" | "--type" => {
-                    branch_type = args[i + 1].clone();
-                }
-                "-p" | "--prepend" => {
-                    prepended_value = args[i + 1].clone();
-                }
+                "-t" | "--type" => match arguments.get(i + 1) {
+                    Some(value) => branch_type = value.clone(),
+                    None => {
+                        println!("No value provided for argument {}", argument);
+                        std::process::exit(1);
+                    }
+                },
+                "-p" | "--prepend" => match arguments.get(i + 1) {
+                    Some(value) => prepended_value = value.clone(),
+                    None => {
+                        println!("No value provided for argument {}", argument);
+                        std::process::exit(1);
+                    }
+                },
                 _ => (),
             }
         }
@@ -27,10 +36,10 @@ impl Config {
     }
 }
 
-pub fn run(config: Config, input: &str) -> String {
+pub fn run(config: Config, input: &str) -> Result<String, &'static str> {
     match input.trim().to_string().split_once("\t") {
-        Some((a, b)) => get_branch_name(config, a, b),
-        None => panic!("No delimiter found"),
+        Some((a, b)) => Ok(get_branch_name(config, a, b)),
+        None => return Err("Invalid input"),
     }
 }
 
@@ -75,7 +84,7 @@ mod tests {
         let config = Config::new(&args);
         let expected = "fx/zammo/APM-123-do-something-that-helps";
         assert_eq!(
-            run(config, "APM-123\tDo something that helps the product"),
+            run(config, "APM-123\tDo something that helps the product").unwrap(),
             expected
         );
     }
@@ -86,7 +95,7 @@ mod tests {
         let config = Config::new(&args);
         let expected = "feature/APM-123-do-something-that-helps-";
         assert_eq!(
-            run(config, "APM-123\tDo something that helps the product"),
+            run(config, "APM-123\tDo something that helps the product").unwrap(),
             expected
         );
     }
@@ -97,7 +106,7 @@ mod tests {
         let config = Config::new(&args);
         let expected = "hotfix/APM-123-do-something-that-helps-t";
         assert_eq!(
-            run(config, "APM-123\tDo something that helps the product"),
+            run(config, "APM-123\tDo something that helps the product").unwrap(),
             expected
         );
     }
@@ -108,7 +117,7 @@ mod tests {
         let config = Config::new(&args);
         let expected = "adam/feature/APM-123-do-something-that-h";
         assert_eq!(
-            run(config, "APM-123\tDo something that helps the product"),
+            run(config, "APM-123\tDo something that helps the product").unwrap(),
             expected
         );
     }

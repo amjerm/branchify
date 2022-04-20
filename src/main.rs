@@ -11,7 +11,7 @@ fn main() {
     let mut input = String::new();
     match io::stdin().read_line(&mut input) {
         Ok(_) => {
-            print!("{}", run(config, &input))
+            print!("{}", run(config, &input).unwrap())
         }
         Err(_) => print!("{}", ""),
     }
