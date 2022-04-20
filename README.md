@@ -1,7 +1,3 @@
-## Unpublished
-
-At this point, this is a personal learning exercise.
-
 # branchify
 
 Git branch name helper written in Rust.
