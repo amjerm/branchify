@@ -9,7 +9,7 @@ pub fn get_branch_name(branch_type: String, a: &str, b: &str) -> String {
 }
 
 fn get_prefix(branch_type: String) -> String {
-    let mut name_segment = "adam/".to_owned();
+    let mut name_segment = "".to_owned();
     name_segment.push_str(branch_type.as_str());
     name_segment
 }
