@@ -1,3 +1,5 @@
+use regex::Regex;
+
 pub struct Config {
     branch_type: String,
     prepended_value: String,
@@ -43,14 +45,14 @@ pub fn run(config: Config, input: &str) -> Result<String, &'static str> {
     }
 }
 
-pub fn get_branch_name(config: Config, a: &str, b: &str) -> String {
+fn get_branch_name(config: Config, a: &str, b: &str) -> String {
     let branch_name = format!(
         "{}/{}-{}",
         get_prefix(config),
         a,
         b.to_lowercase().replace(" ", "-")
     );
-    truncate_branch_name(&branch_name).to_string()
+    clean_branch_name(branch_name).to_string()
 }
 
 fn get_prefix(config: Config) -> String {
@@ -62,9 +64,24 @@ fn get_prefix(config: Config) -> String {
     prefix
 }
 
-fn truncate_branch_name(branch_name: &str) -> &str {
+fn clean_branch_name(branch_name: String) -> String {
+    let mut result = Regex::new(r"^/|\.\.|@\{|\.lock|\\|[*~: \?\^\[]")
+        .unwrap()
+        .replace_all(&branch_name, "")
+        .to_string();
+    result = Regex::new(r"//|/\.")
+        .unwrap()
+        .replace_all(&result, "/")
+        .to_string();
+    //let truncated_result = truncate_branch_name(result);
+    let re = Regex::new(r"(-)$").unwrap();
+    re.replace_all(&truncate_branch_name(result), "")
+        .to_string()
+}
+
+fn truncate_branch_name(branch_name: String) -> String {
     match branch_name.get(..40) {
-        Some(s) => s,
+        Some(s) => s.to_string(),
         None => branch_name,
     }
 }
@@ -93,7 +110,7 @@ mod tests {
     fn test_run_without_args() {
         let args: Vec<String> = vec![];
         let config = Config::new(&args);
-        let expected = "feature/APM-123-do-something-that-helps-";
+        let expected = "feature/APM-123-do-something-that-helps";
         assert_eq!(
             run(config, "APM-123\tDo something that helps the product").unwrap(),
             expected
@@ -152,7 +169,7 @@ mod tests {
 
     #[test]
     fn test_truncate_branch_name() {
-        let branch_name = "adam/feature/APM-123-do-something-that-helps";
+        let branch_name = String::from("adam/feature/APM-123-do-something-that-helps");
         assert_eq!(
             truncate_branch_name(branch_name),
             "adam/feature/APM-123-do-something-that-h"
@@ -161,7 +178,17 @@ mod tests {
 
     #[test]
     fn test_truncate_short_branch_name() {
-        let branch_name = "adam/feature/APM-123-do";
+        let branch_name = String::from("adam/feature/APM-123-do");
         assert_eq!(truncate_branch_name(branch_name), "adam/feature/APM-123-do");
+    }
+
+    #[test]
+    fn test_clean_branch_name() {
+        let branch_name =
+            String::from("/adam//feature.lock/.APM-12..34-do-som e~t^h:i?n*g[-t@{hat-h\\elps.");
+        assert_eq!(
+            clean_branch_name(branch_name),
+            "adam/feature/APM-1234-do-something-that"
+        );
     }
 }
