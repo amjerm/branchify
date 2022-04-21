@@ -50,7 +50,7 @@ fn get_branch_name(config: Config, a: &str, b: &str) -> String {
         "{}/{}-{}",
         get_prefix(config),
         a,
-        b.to_lowercase().replace(" ", "-")
+        b.to_lowercase().replace(" ", "-").replace("/", "-")
     );
     clean_branch_name(branch_name).to_string()
 }
@@ -65,7 +65,7 @@ fn get_prefix(config: Config) -> String {
 }
 
 fn clean_branch_name(branch_name: String) -> String {
-    let mut result = Regex::new(r"^/|\.\.|@\{|\.lock|\\|[*~: \?\^\[]")
+    let mut result = Regex::new(r"^/|\.\.|@\{|\.lock|\\|[\$\*\?'\[\]\(\)\^\~=<>]")
         .unwrap()
         .replace_all(&branch_name, "")
         .to_string();
@@ -73,10 +73,12 @@ fn clean_branch_name(branch_name: String) -> String {
         .unwrap()
         .replace_all(&result, "/")
         .to_string();
-    //let truncated_result = truncate_branch_name(result);
-    let re = Regex::new(r"(-)$").unwrap();
-    re.replace_all(&truncate_branch_name(result), "")
-        .to_string()
+    let mut re = Regex::new(r"-{2,}").unwrap();
+    result = re
+        .replace_all(&truncate_branch_name(result), "-")
+        .to_string();
+    re = Regex::new(r"[-\./]$").unwrap();
+    re.replace_all(&result, "").to_string()
 }
 
 fn truncate_branch_name(branch_name: String) -> String {
@@ -102,6 +104,26 @@ mod tests {
         let expected = "fx/zammo/APM-123-do-something-that-helps";
         assert_eq!(
             run(config, "APM-123\tDo something that helps the product").unwrap(),
+            expected
+        );
+    }
+
+    #[test]
+    fn test_run_with_long_branch_name() {
+        let args: Vec<String> = vec![
+            String::from("-p"),
+            String::from("fx"),
+            String::from("-t"),
+            String::from("zammo"),
+        ];
+        let config = Config::new(&args);
+        let expected = "fx/zammo/APM-123-do-something-that-helps";
+        assert_eq!(
+            run(
+                config,
+                "APM-123\tDo something that helps the product a whole whole lot"
+            )
+            .unwrap(),
             expected
         );
     }
@@ -140,55 +162,45 @@ mod tests {
     }
 
     #[test]
-    fn test_get_branch_name() {
-        let args: Vec<String> = vec![
-            String::from("-p"),
-            String::from("fx"),
-            String::from("-t"),
-            String::from("zammo"),
-        ];
+    fn test_run_with_non_word_chars() {
+        let args: Vec<String> = vec![];
         let config = Config::new(&args);
-        let expected = "fx/zammo/APM-123-do-something-that-helps";
+        let expected = "feature/APM-123-do-somethin-that-_";
         assert_eq!(
-            get_branch_name(config, "APM-123", "Do something that helps the product"),
+            run(
+                config,
+                "APM-123\tDo ==> som'ethin' -> that -- _\"helps\"_ -- the product"
+            )
+            .unwrap(),
             expected
         );
     }
 
     #[test]
-    fn test_get_prefix() {
-        let args: Vec<String> = vec![
-            String::from("-p"),
-            String::from("fx"),
-            String::from("-t"),
-            String::from("zammo"),
-        ];
+    fn test_run_with_other_unsupported_git_patterns() {
+        // cannot end with .
+        // cannot contain ..
+        // cannot contain .lock
+        let args: Vec<String> = vec![];
         let config = Config::new(&args);
-        assert_eq!(get_prefix(config), "fx/zammo");
-    }
-
-    #[test]
-    fn test_truncate_branch_name() {
-        let branch_name = String::from("adam/feature/APM-123-do-something-that-helps");
+        let expected = "feature/APM-123-do-something-that-helps";
         assert_eq!(
-            truncate_branch_name(branch_name),
-            "adam/feature/APM-123-do-something-that-h"
+            run(config, "APM-123\tDo something th..at he.locklps.").unwrap(),
+            expected
         );
     }
 
     #[test]
-    fn test_truncate_short_branch_name() {
-        let branch_name = String::from("adam/feature/APM-123-do");
-        assert_eq!(truncate_branch_name(branch_name), "adam/feature/APM-123-do");
-    }
-
-    #[test]
-    fn test_clean_branch_name() {
-        let branch_name =
-            String::from("/adam//feature.lock/.APM-12..34-do-som e~t^h:i?n*g[-t@{hat-h\\elps.");
+    fn test_run_with_yet_other_unsupported_git_patterns() {
+        // cannot end with /
+        // cannot contain //
+        // allows .
+        let args: Vec<String> = vec![];
+        let config = Config::new(&args);
+        let expected = "feature/APM-123-do-some-thing-v9.1.1";
         assert_eq!(
-            clean_branch_name(branch_name),
-            "adam/feature/APM-1234-do-something-that"
+            run(config, "APM-123\tDo some//thing v9.1.1/").unwrap(),
+            expected
         );
     }
 }
