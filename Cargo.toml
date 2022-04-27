@@ -1,5 +1,5 @@
 [package]
-name = "fmt-gitflow-branch"
+name = "branchify"
 version = "0.1.0"
 description = "Format a ticket number and summary into a Git branch name"
 categories = ["command-line-utilities", "development-tools"]

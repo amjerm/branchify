@@ -1,8 +1,8 @@
-use fmt_gitflow_branch;
+use branchify;
 use std::env;
 use std::io;
 
-use fmt_gitflow_branch::{run, Config};
+use branchify::{run, Config};
 
 fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
