@@ -1,3 +1,5 @@
+![Tests Passing](https://github.com/amjerm/branchify/actions/workflows/run-tests.yml.badge.svg)
+
 # branchify
 
 Git branch name helper written in Rust.
