@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "branchify"
+name = "fmt-gitflow-branch"
 version = "0.1.0"
 dependencies = [
  "regex",

@@ -65,7 +65,7 @@ fn get_prefix(config: Config) -> String {
 }
 
 fn clean_branch_name(branch_name: String) -> String {
-    let mut result = Regex::new(r"^/|\.\.|@\{|\.lock|\\|[\$\*\?'\[\]\(\)\^\~=<>]")
+    let mut result = Regex::new(r"^/|\.\.|@\{|\.lock|\\|[\$\*\?'\[\]\(\)\^\~=<>@]")
         .unwrap()
         .replace_all(&branch_name, "")
         .to_string();
@@ -181,11 +181,12 @@ mod tests {
         // cannot end with .
         // cannot contain ..
         // cannot contain .lock
+        // removes @
         let args: Vec<String> = vec![];
         let config = Config::new(&args);
         let expected = "feature/APM-123-do-something-that-helps";
         assert_eq!(
-            run(config, "APM-123\tDo something th..at he.locklps.").unwrap(),
+            run(config, "APM-123\tDo somethi@ng th..at he.locklps.").unwrap(),
             expected
         );
     }
