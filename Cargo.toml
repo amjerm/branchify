@@ -1,9 +1,14 @@
 [package]
-name = "branchify"
+name = "fmt-gitflow-branch"
 version = "0.1.0"
+description = "Format a ticket number and summary into a Git branch name"
+categories = ["command-line-utilities", "development-tools"]
+keywords = ["git", "branch", "ticket", "ticket-number", "gitflow"]
+repository = "https://github.com/amjerm/branchify"
+readme = "README.md"
+include = ["src/**/*rs", "Cargo.toml", "LICENSE"]
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "MIT"
 
 [dependencies]
 regex = "1"
