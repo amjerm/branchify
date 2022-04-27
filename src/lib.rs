@@ -1,3 +1,7 @@
+//! # branchify
+//!
+//! A CLI tool for creating git branch names.
+
 use regex::Regex;
 
 pub struct Config {
