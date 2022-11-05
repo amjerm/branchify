@@ -69,7 +69,7 @@ fn get_prefix(config: Config) -> String {
 }
 
 fn clean_branch_name(branch_name: String) -> String {
-    let mut result = Regex::new(r"^/|\.\.|@\{|\.lock|\\|[\$\*\?'\[\]\(\)\^\~=<>@]")
+    let mut result = Regex::new(r"^/|\.\.|`|@\{|\.lock|\\|[\$\*\?'\[\]\(\)\^\~=<>@]")
         .unwrap()
         .replace_all(&branch_name, "")
         .to_string();
@@ -205,6 +205,20 @@ mod tests {
         let expected = "feature/APM-123-do-some-thing-v9.1.1";
         assert_eq!(
             run(config, "APM-123\tDo some//thing v9.1.1/").unwrap(),
+            expected
+        );
+    }
+
+    #[test]
+    fn test_run_with_back_ticks() {
+        // cannot end with /
+        // cannot contain //
+        // allows .
+        let args: Vec<String> = vec![];
+        let config = Config::new(&args);
+        let expected = "feature/APM-123-do-something-v9.1.1";
+        assert_eq!(
+            run(config, "APM-123\tDo `something` v9.1.1/").unwrap(),
             expected
         );
     }
